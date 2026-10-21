@@ -1,0 +1,39 @@
+
+name: Build Zikra APK
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install unzip
+        run: sudo apt-get update && sudo apt-get install -y unzip
+
+      - name: Extract Android project
+        run: |
+          unzip -o Zikra_AndroidTV_APK_Project.zip -d extracted
+          find extracted -name gradlew -type f -exec chmod +x {} \;
+          find extracted -name gradlew -type f
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Build APK
+        run: |
+          cd extracted/Zikra_AndroidTV_APK_Project
+          ./gradlew assembleDebug
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: zikra-tv-apk
+          path: extracted/**/app/build/outputs/apk/debug/*.apk
+          if-no-files-found: error
